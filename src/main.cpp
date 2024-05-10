@@ -18,14 +18,19 @@ int main(int argc, char* argv[]) {
     }
     int gameWidth = 1280;
     int gameHeight = 720;
-    RenderWindow window("Game v1.0", gameWidth, gameHeight);
+    RenderWindow window("Pawng", gameWidth, gameHeight);
 
     SDL_Texture *platformTex = window.loadTexture("res/gfx/BasePlateRMBG.png");
     SDL_Texture *ballTex = window.loadTexture("res/gfx/smallball.png");
     SDL_Texture *playButtonTex = window.loadTexture("res/gfx/playButton.png");
+    SDL_Texture *quitButtonTex = window.loadTexture("res/gfx/quitButton.png");
+    SDL_Texture *titleTex = window.loadTexture("res/gfx/titleImage.png");
     
-    int playWidth = 200;
-    int playHeight = 50;
+    int buttonWidth = 200;
+    int buttonHeight = 50;
+
+    int titleWidth = 600;
+    int titleHeight = 153;
 
     srand(time(NULL));
     int windowWidth = 0;
@@ -43,22 +48,65 @@ int main(int argc, char* argv[]) {
     int ballSpeedX = rand() % 100;
     int ballSpeedY = rand() % 100;
     long double totalSpeed = sqrt(((ballSpeedX ^ 2) + (ballSpeedY ^ 2)));
-    Vector ballSpeed((0.08 * (ballSpeedX / totalSpeed)),(0.08 * (ballSpeedY / totalSpeed)));
+    Vector ballSpeed((0.05 * (ballSpeedX / totalSpeed)),(0.05 * (ballSpeedY / totalSpeed)));
+
+    int titleX = (windowWidth / 2) - (titleWidth / 2);
+    int titleY = (windowHeight / 4) - (titleHeight / 2);
+    if (titleY < 0) {
+        titleY = 0;
+    }
+    Entity title(titleX, titleY, titleWidth, titleHeight, titleTex);
+
+    int titleSpeedX = rand() % 100;
+    int titleSpeedY = rand() % 100;
+    long double totalTitleSpeed = sqrt(((titleSpeedX ^ 2) + (titleSpeedY ^ 2)));
+    Vector titleSpeed((0.007 * (titleSpeedX / totalTitleSpeed)),(0.007 * (titleSpeedY / totalTitleSpeed)));
 
     bool running = true;
     SDL_Event menuEvent;
     int mouseX = 0;
     int mouseY = 0;
+    startscreen:
     while (running)
     {
         SDL_GetWindowSize(window.window, &windowWidth, &windowHeight);
-        int playX = (windowWidth / 2) - (playWidth / 2);
-        int playY = (windowHeight / 2) - (playHeight / 2);
-        Entity playButton(playX, playY, playWidth, playHeight, playButtonTex);
+
+        int playX = (windowWidth / 2) - (buttonWidth / 2);
+        int playY = (windowHeight / 2) - (buttonHeight / 2);
+        Entity playButton(playX, playY, buttonWidth, buttonHeight, playButtonTex);
+
+        int quitY = playY + 5 + buttonHeight;
+        Entity quitButton(playX, quitY, buttonWidth, buttonHeight, quitButtonTex);
+
+        if (title.getX() <= 0)
+        {
+            titleSpeed.changeX(-1);
+        }
+        if (title.getY() <= 0)
+        {
+            titleSpeed.changeY(-1);
+        }
+        if (title.getX() >= windowWidth - titleWidth) {
+            titleSpeed.changeX(-1);
+        }
+        if (title.getY() >= playY - titleHeight) {
+            titleSpeed.changeY(-1);
+        }
+        title.changeX(titleSpeed.getX());
+        //printf("TitleX: %.2f TitleY: %.2f SpeedX: %.2f SpeedY: %.2f\n", title.getX(), title.getY(), titleSpeed.getX(), titleSpeed.getY());
+        title.changeY(titleSpeed.getY());
         while (SDL_PollEvent(&menuEvent))
         {
             switch (menuEvent.type)
             {
+            case SDL_KEYDOWN:
+                if (menuEvent.key.keysym.sym == SDLK_ESCAPE) {
+                    running = false;
+                    window.cleanup();
+                    SDL_Quit();
+                    return 0;
+                    break;
+                }
             case SDL_QUIT:
                 running = false;
                 window.cleanup();
@@ -67,10 +115,16 @@ int main(int argc, char* argv[]) {
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 SDL_GetMouseState(&mouseX, &mouseY);
-                //printf("MouseX: %d, MouseY: %d\nPlayX: %d, PlayY: %d\nWidth: %d, Height: %d\n----\n", mouseX, mouseY, playX, playY, playWidth, playHeight);
-                if ((mouseX > playX) && (mouseX < (playX + playWidth)) && (mouseY > playY) && (mouseY < (playY + playHeight))) {
+                //printf("MouseX: %d, MouseY: %d\nPlayX: %d, PlayY: %d\nWidth: %d, Height: %d\n----\n", mouseX, mouseY, playX, playY, buttonWidth, buttonHeight);
+                if ((mouseX > playX) && (mouseX < (playX + buttonWidth)) && (mouseY > playY) && (mouseY < (playY + buttonHeight))) {
                     //printf("Pressed\n");
                     goto playing;
+                }
+                if ((mouseX > playX) && (mouseX < (playX + buttonWidth)) && (mouseY > quitY) && (mouseY < (quitY + buttonHeight))) {
+                    running = false;
+                    window.cleanup();
+                    SDL_Quit();
+                    return 0;
                 }
                 break;
             default:
@@ -78,7 +132,9 @@ int main(int argc, char* argv[]) {
             }
         }
         window.clear();
+        window.render(title);
         window.render(playButton);
+        window.render(quitButton);
         window.display();
         
     }
@@ -120,6 +176,7 @@ int main(int argc, char* argv[]) {
             case SDL_KEYDOWN:
                 if (event.key.keysym.sym == SDLK_ESCAPE) {
                     playing = false;
+                    goto startscreen;
                 }
                 if (event.key.keysym.sym == SDLK_LEFT)
                 {
