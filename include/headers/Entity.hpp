@@ -10,6 +10,10 @@ class Entity {
         float getWidth();
         void changeX(float inc);
         void changeY(float inc);
+        void setX(float set);
+        void setY(float set);
+        void setWidth(float set);
+        void setHeight(float set);
         SDL_Texture *getTex();
         SDL_Rect getCurrentFrame();
     private:

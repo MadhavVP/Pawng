@@ -10,7 +10,7 @@
 
 int main(int argc, char* argv[]) {
     
-    if (SDL_Init(SDL_INIT_VIDEO) > 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) > 0) {
         std::cout << "SDL FAILED: " << SDL_GetError() << std::endl;
     }
     if (!(IMG_Init(IMG_INIT_PNG))) {
@@ -28,6 +28,8 @@ int main(int argc, char* argv[]) {
     
     int buttonWidth = 200;
     int buttonHeight = 50;
+    int hoverButtonWidth = 220;
+    int hoverButtonHeight = 55;
 
     int titleWidth = 600;
     int titleHeight = 153;
@@ -57,8 +59,8 @@ int main(int argc, char* argv[]) {
     }
     Entity title(titleX, titleY, titleWidth, titleHeight, titleTex);
 
-    int titleSpeedX = rand() % 100;
-    int titleSpeedY = rand() % 100;
+    int titleSpeedX = 30 + (rand() % 70);
+    int titleSpeedY = 10 + (rand() % 90);
     long double totalTitleSpeed = sqrt(((titleSpeedX ^ 2) + (titleSpeedY ^ 2)));
     Vector titleSpeed((0.007 * (titleSpeedX / totalTitleSpeed)),(0.007 * (titleSpeedY / totalTitleSpeed)));
 
@@ -78,23 +80,49 @@ int main(int argc, char* argv[]) {
         int quitY = playY + 5 + buttonHeight;
         Entity quitButton(playX, quitY, buttonWidth, buttonHeight, quitButtonTex);
 
+        int hoverPlayX = (windowWidth / 2) - (hoverButtonWidth / 2);
+        int hoverPlayY = (windowHeight / 2) - (hoverButtonHeight / 2);
+        int hoverQuitY = playY + hoverButtonHeight;
+
         if (title.getX() <= 0)
         {
             titleSpeed.changeX(-1);
+            title.setX(0);
         }
         if (title.getY() <= 0)
         {
             titleSpeed.changeY(-1);
+            title.setY(0);
         }
         if (title.getX() >= windowWidth - titleWidth) {
             titleSpeed.changeX(-1);
+            title.setX(windowWidth - titleWidth);
         }
         if (title.getY() >= playY - titleHeight) {
             titleSpeed.changeY(-1);
+            title.setY(playY- titleHeight);
         }
         title.changeX(titleSpeed.getX());
         //printf("TitleX: %.2f TitleY: %.2f SpeedX: %.2f SpeedY: %.2f\n", title.getX(), title.getY(), titleSpeed.getX(), titleSpeed.getY());
         title.changeY(titleSpeed.getY());
+        SDL_GetMouseState(&mouseX, &mouseY);
+                //printf("MouseX: %d, MouseY: %d\nPlayX: %d, PlayY: %d\nWidth: %d, Height: %d\n----\n", mouseX, mouseY, playX, playY, buttonWidth, buttonHeight);
+                if ((mouseX > playX) && (mouseX < (playX + buttonWidth)) && (mouseY > playY) && (mouseY < (playY + buttonHeight))) {
+                    playButton.setX(hoverPlayX);
+                    playButton.setY(hoverPlayY);
+                    playButton.setWidth(hoverButtonWidth);
+                    playButton.setHeight(hoverButtonHeight);
+                }
+                else if ((mouseX > playX) && (mouseX < (playX + buttonWidth)) && (mouseY > quitY) && (mouseY < (quitY + buttonHeight))) {
+                    quitButton.setX(hoverPlayX);
+                    quitButton.setY(hoverQuitY);
+                    quitButton.setWidth(hoverButtonWidth);
+                    quitButton.setHeight(hoverButtonHeight);
+                }
+                else {
+                    playButton = {(float) playX,(float) playY,(float) buttonWidth,(float) buttonHeight, playButtonTex};
+                    quitButton = {(float) playX,(float) quitY,(float) buttonWidth,(float) buttonHeight, quitButtonTex};
+                }
         while (SDL_PollEvent(&menuEvent))
         {
             switch (menuEvent.type)
@@ -115,7 +143,7 @@ int main(int argc, char* argv[]) {
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 SDL_GetMouseState(&mouseX, &mouseY);
-                //printf("MouseX: %d, MouseY: %d\nPlayX: %d, PlayY: %d\nWidth: %d, Height: %d\n----\n", mouseX, mouseY, playX, playY, buttonWidth, buttonHeight);
+                printf("MouseX: %d, MouseY: %d\nPlayX: %d, PlayY: %d\nWidth: %d, Height: %d\n----\n", mouseX, mouseY, playX, playY, buttonWidth, buttonHeight);
                 if ((mouseX > playX) && (mouseX < (playX + buttonWidth)) && (mouseY > playY) && (mouseY < (playY + buttonHeight))) {
                     //printf("Pressed\n");
                     goto playing;
@@ -143,7 +171,7 @@ int main(int argc, char* argv[]) {
     bool playing = true;
     SDL_Event event;
     float platformSpeed = 50;
-    int lenience = 5;
+    int lenience = 3;
     while (playing)
     {
         SDL_GetWindowSize(window.window, &windowWidth, &windowHeight);
@@ -157,11 +185,13 @@ int main(int argc, char* argv[]) {
         }
         if (ball.getX() >= windowWidth - ballWidth) {
             ballSpeed.changeX(-1);
+            ball.setX(windowWidth - ballWidth);
         }
         if (ball.getY() >= windowHeight - ballHeight) {
             ballSpeed.changeY(-1);
+            ball.setY(windowHeight - ballHeight);
         }
-        if ((ball.getX() >= platform.getX()) && (ball.getX() <= (platform.getX() + platformWidth)) && (ball.getY() >= platform.getY()) /*&& (ball.getY() <= (platform.getY() + lenience))*/) {
+        if ((ball.getX() >= platform.getX()) && (ball.getX() <= (platform.getX() + platformWidth)) && (ball.getY() >= platform.getY()) && (ball.getY() <= (platform.getY() + lenience))) {
             ballSpeed.changeY(-1);
         }
         ball.changeX(ballSpeed.getX());
