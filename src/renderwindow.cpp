@@ -14,6 +14,16 @@ RenderWindow::RenderWindow(const char * title, int w, int h) {
 
 }
 
+RenderWindow::RenderWindow(const char * title, int w, int h, Uint32 flags) {
+    window = NULL;
+    window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | flags);
+    if (window == NULL) {
+            std::cout << "Window Failed: " << SDL_GetError() << std::endl;
+    }
+    rend = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+}
+
 SDL_Texture *RenderWindow::loadTexture(const char *fp) {
     SDL_Texture *tex = NULL;
     tex = IMG_LoadTexture(rend, fp);

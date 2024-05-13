@@ -1,7 +1,7 @@
 CC = g++
 LIBS = -Llib -lmingw32 -lSDL2main -lSDL2 -lSDL2_image
 INCLUDES = -Iinclude -Iinclude/sdl -Iinclude/headers
-DEPS = main.o entity.o renderwindow.o vector.o
+DEPS = main.o entity.o renderwindow.o vector.o clock.o
 
 pawng: $(DEPS)
 	$(CC) $(INCLUDES) -o $@ $(DEPS) $(LIBS)

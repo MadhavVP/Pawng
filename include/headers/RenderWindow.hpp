@@ -6,6 +6,7 @@
 class RenderWindow {
     public: 
         RenderWindow(const char *title, int w, int h);
+        RenderWindow(const char * title, int w, int h, Uint32 flags);
         SDL_Texture *loadTexture(const char *fp);
         void cleanup();
         void clear();
