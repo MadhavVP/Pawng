@@ -4,7 +4,7 @@ INCLUDES = -Iinclude -Iinclude/sdl -Iinclude/headers
 DEPS = main.o entity.o renderwindow.o vector.o clock.o
 
 pawng: $(DEPS)
-	$(CC) $(INCLUDES) -o $@ $(DEPS) $(LIBS)
+	$(CC) $(INCLUDES) -g -o $@ $(DEPS) $(LIBS)
 
 %.o: src/%.cpp
 	$(CC) -c $(INCLUDES) $< -o $@ $(LIBS)

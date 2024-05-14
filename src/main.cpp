@@ -3,7 +3,6 @@
 #include <iostream>
 #include <time.h>
 #include <math.h>
-#include <Windows.h>
  
 #include "RenderWindow.hpp"
 #include "Entity.hpp"
@@ -30,9 +29,22 @@ int main(int argc, char* argv[]) {
     SDL_Texture *timerTex[] = {window.loadTexture("res/gfx/200x300pixel0.png"),
                                window.loadTexture("res/gfx/200x300pixel1.png"),
                                window.loadTexture("res/gfx/200x300pixel2.png"),
-                               window.loadTexture("res/gfx/200x300pixel3.png"),
-                               window.loadTexture("res/gfx/200x300pixel4.png"),
-                               window.loadTexture("res/gfx/200x300pixel5.png")};
+                               window.loadTexture("res/gfx/200x300pixel3.png")};
+    for (int i = 0; i < 6; i++)
+    {
+        SDL_SetTextureAlphaMod(timerTex[i], 150);
+    }                           
+    SDL_Texture *clockTex[] = {window.loadTexture("res/gfx/40x60pixel0.png"),
+                               window.loadTexture("res/gfx/40x60pixel1.png"),
+                               window.loadTexture("res/gfx/40x60pixel2.png"),
+                               window.loadTexture("res/gfx/40x60pixel3.png"),
+                               window.loadTexture("res/gfx/40x60pixel4.png"),
+                               window.loadTexture("res/gfx/40x60pixel5.png"),
+                               window.loadTexture("res/gfx/40x60pixel6.png"),
+                               window.loadTexture("res/gfx/40x60pixel7.png"),
+                               window.loadTexture("res/gfx/40x60pixel8.png"),
+                               window.loadTexture("res/gfx/40x60pixel9.png")};
+    SDL_Texture *dotTex = window.loadTexture("res/gfx/pixelDot.png");
     
     int buttonWidth = 200;
     int buttonHeight = 50;
@@ -44,6 +56,9 @@ int main(int argc, char* argv[]) {
 
     int timerWidth = 200;
     int timerHeight = 300;
+
+    int clockWidth = 40;
+    int clockHeight = 60;
 
     srand(time(NULL));
     int windowWidth = 0;
@@ -58,10 +73,10 @@ int main(int argc, char* argv[]) {
     int ballWidth = 50;
     int ballHeight = ballWidth;
     Entity ball((rand() % (windowWidth)), 10, ballWidth, ballHeight, ballTex);
-    int ballSpeedX = rand() % 100;
-    int ballSpeedY = rand() % 100;
+    int ballSpeedX = 50 + rand() % 50;
+    int ballSpeedY = 50 + rand() % 50;
     long double totalSpeed = sqrt(((ballSpeedX ^ 2) + (ballSpeedY ^ 2)));
-    Vector ballSpeed((0.05 * (ballSpeedX / totalSpeed)),(0.05 * (ballSpeedY / totalSpeed)));
+    Vector ballSpeed((0.3 * (ballSpeedX / totalSpeed)),(0.3 * (ballSpeedY / totalSpeed)));
 
     int titleX = (windowWidth / 2) - (titleWidth / 2);
     int titleY = (windowHeight / 4) - (titleHeight / 2);
@@ -73,20 +88,7 @@ int main(int argc, char* argv[]) {
     int titleSpeedX = 30 + (rand() % 70);
     int titleSpeedY = 30 + (rand() % 70);
     long double totalTitleSpeed = sqrt(((titleSpeedX ^ 2) + (titleSpeedY ^ 2)));
-    Vector titleSpeed((0.007 * (titleSpeedX / totalTitleSpeed)),(0.007 * (titleSpeedY / totalTitleSpeed)));
-
-    int timerX = (windowWidth / 2) - (timerWidth / 2);
-    int timerY = (windowHeight / 4) - (timerHeight / 2);
-    for (int i = 0; i < 6; i++)
-    {
-        SDL_SetTextureAlphaMod(timerTex[i], 200);
-    }
-    Entity timerNums[] = {Entity(timerX, timerY, timerWidth, timerHeight, timerTex[0]),
-                          Entity(timerX, timerY, timerWidth, timerHeight, timerTex[1]),
-                          Entity(timerX, timerY, timerWidth, timerHeight, timerTex[2]),
-                          Entity(timerX, timerY, timerWidth, timerHeight, timerTex[3]),
-                          Entity(timerX, timerY, timerWidth, timerHeight, timerTex[4]),
-                          Entity(timerX, timerY, timerWidth, timerHeight, timerTex[5])};
+    Vector titleSpeed((0.1 * (titleSpeedX / totalTitleSpeed)),(0.1 * (titleSpeedY / totalTitleSpeed)));
 
     bool running = true;
     SDL_Event menuEvent;
@@ -197,61 +199,73 @@ int main(int argc, char* argv[]) {
     }
     
     playing:
+    
     bool playing = true;
+    bool first = true;
     SDL_Event event;
     float platformSpeed = 50;
     int lenience = 3;
-    SDL_GetWindowSize(window.window, &windowWidth, &windowHeight);
-    /*while (timer5S.getSecs() < 6)
-    {
-        timer5S.update(SDL_GetTicks64());
-        window.clear();
-        if (timer5S.getSecs() >= 5) {
-            window.render(timerNums[0]);
-        }
-        else if (timer5S.getSecs() >= 4) {
-            window.render(timerNums[1]);
-        }
-        else if (timer5S.getSecs() >= 3) {
-            window.render(timerNums[2]);
-        }
-        else if (timer5S.getSecs() >= 2) {
-            window.render(timerNums[3]);
-        }
-        else if (timer5S.getSecs() >= 1) {
-            window.render(timerNums[4]);
-        }
-        else if (timer5S.getSecs() >= 0) {
-            window.render(timerNums[5]);
-        }
-        window.render(ball);
-        window.render(platform);
-        window.display();
-    }*/
-
     frameManager.reset();
     Clock timer5s = Clock();
+    Clock gameClock = Clock();
     int timerIterator = 0;
+    int secOnes = 0;
+    int secTens = 0;
+    int minOnes = 0;
+    int minTens = 0;
+    int hrOnes = 00;
+    int hrTens = 0;
+    int clockMidX = 0;
+    int clockY = 5;
     while (playing)
     {   
         timer5s.reset();
-        while (timerIterator < 6) {
-            if (timer5s.getDT() > 8.5f) {
+        while (timerIterator < 4) {
+            SDL_GetWindowSize(window.window, &windowWidth, &windowHeight);
+            int timerX = (windowWidth / 2) - (timerWidth / 2);
+            int timerY = (windowHeight / 3) - (timerHeight / 2);
+            Entity timerNum(timerX, timerY, timerWidth, timerHeight, timerTex[3 - timerIterator]);
+            if (timer5s.getDT() > 1.0f) {
                 timer5s.reset();
                 timerIterator++;
             }
             window.clear();
-            window.render(timerNums[5 - timerIterator]);
+            window.render(timerNum);
             window.render(ball);
             window.render(platform);
             window.display();
             timer5s.update();
         }
         
+        if (first) {
+            gameClock.reset();
+            first = false;
+        }
         frameManager.update();
+        gameClock.update();
+        printf("Line 250\n");
         if (frameManager.getDT() > (1 / 240.0f)) {
+            window.clear();
             frameManager.reset();
+            printf("Line 254\n");
+            
+            secOnes = gameClock.getSecOnes();
+            secTens = gameClock.getSecTens();
+            minOnes = gameClock.getMinOnes();
+            minTens = gameClock.getMinTens();
+            hrOnes = gameClock.getHrOnes();
+            hrTens = gameClock.getHrTens();
+            clockMidX = (windowWidth / 2) - (clockWidth / 2);
+            printf("Line 261\n");
+            Entity timings[] = {Entity(clockMidX + (3 * clockWidth) + 4, clockY, clockWidth, clockHeight, clockTex[secOnes]),
+                                Entity(clockMidX + (2 * clockWidth) + 3, clockY, clockWidth, clockHeight, clockTex[secTens]),
+                                Entity(clockMidX + (0.5 * clockWidth), clockY, clockWidth, clockHeight, clockTex[minOnes]),
+                                Entity(clockMidX - (0.5  * clockWidth), clockY, clockWidth, clockHeight, clockTex[minTens]),
+                                Entity(clockMidX - (2 * clockWidth) + 3, clockY, clockWidth, clockHeight, clockTex[hrOnes]),
+                                Entity(clockMidX - (3 * clockWidth) + 4, clockY, clockWidth, clockHeight, clockTex[hrTens])};
+            
             SDL_GetWindowSize(window.window, &windowWidth, &windowHeight);
+            printf("Line 269\n");
             if (ball.getX() <= 0)
             {
                 ballSpeed.changeX(-1);
@@ -302,14 +316,17 @@ int main(int argc, char* argv[]) {
                 }
             }
 
-            window.clear();
+            
+            for (int i = 0; i < 6; i++) {
+                window.render(timings[i]);
+            }
             window.render(ball);
             window.render(platform);
             window.display();
         }
         
     }
-    
+    gameClock.print();
     leaving: 
     window.cleanup();
     SDL_Quit();
