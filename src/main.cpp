@@ -43,8 +43,9 @@ int main(int argc, char* argv[]) {
                                window.loadTexture("res/gfx/40x60pixel6.png"),
                                window.loadTexture("res/gfx/40x60pixel7.png"),
                                window.loadTexture("res/gfx/40x60pixel8.png"),
-                               window.loadTexture("res/gfx/40x60pixel9.png")};
-    for (int i = 0; i <= 9; i++)
+                               window.loadTexture("res/gfx/40x60pixel9.png"),
+                               window.loadTexture("res/gfx/colon3dMed.png")};
+    for (int i = 0; i <= 10; i++)
     {
         SDL_SetTextureAlphaMod(clockTex[i], 150);
     }  
@@ -272,12 +273,14 @@ int main(int argc, char* argv[]) {
             hrTens = gameClock.getHrTens();
             clockMidX = (windowWidth / 2) - (clockWidth / 2);
             //printf("Line 261\n");
-            Entity timings[] = {Entity(clockMidX + (3 * clockWidth) + 4, clockY, clockWidth, clockHeight, clockTex[secOnes]),
+            Entity timings[] = {Entity(clockMidX + (3 * clockWidth) + 3, clockY, clockWidth, clockHeight, clockTex[secOnes]),
                                 Entity(clockMidX + (2 * clockWidth) + 3, clockY, clockWidth, clockHeight, clockTex[secTens]),
-                                Entity(clockMidX + (0.5 * clockWidth), clockY, clockWidth, clockHeight, clockTex[minOnes]),
-                                Entity(clockMidX - (0.5  * clockWidth), clockY, clockWidth, clockHeight, clockTex[minTens]),
-                                Entity(clockMidX - (2 * clockWidth) + 3, clockY, clockWidth, clockHeight, clockTex[hrOnes]),
-                                Entity(clockMidX - (3 * clockWidth) + 4, clockY, clockWidth, clockHeight, clockTex[hrTens])};
+                                Entity(clockMidX + (1.5f * clockWidth) - 8.5f, clockY, clockWidth, clockHeight, clockTex[10]),
+                                Entity(clockMidX + (0.5f * clockWidth), clockY, clockWidth, clockHeight, clockTex[minOnes]),
+                                Entity(clockMidX - (0.5f  * clockWidth), clockY, clockWidth, clockHeight, clockTex[minTens]),
+                                Entity(clockMidX - (1.5f * clockWidth) + 9, clockY, clockWidth, clockHeight, clockTex[10]),
+                                Entity(clockMidX - (2 * clockWidth) - 3, clockY, clockWidth, clockHeight, clockTex[hrOnes]),
+                                Entity(clockMidX - (3 * clockWidth) - 3, clockY, clockWidth, clockHeight, clockTex[hrTens])};
             
             SDL_GetWindowSize(window.window, &windowWidth, &windowHeight);
             //printf("Line 269\n");
@@ -398,7 +401,7 @@ int main(int argc, char* argv[]) {
                             }
                         }
                         window.clear();
-                        for (int i = 0; i < 6; i++) {
+                        for (int i = 0; i < 8; i++) {
                             window.render(timings[i]);
                         }
                         window.render(platform);
@@ -540,7 +543,7 @@ int main(int argc, char* argv[]) {
                                     }
                                     
                                 }
-                                for (int i = 0; i < 6; i++) {
+                                for (int i = 0; i < 8; i++) {
                                     window.render(timings[i]);
                                 }
                                 window.render(platform);
@@ -577,7 +580,7 @@ int main(int argc, char* argv[]) {
                 
             }
 
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < 8; i++) {
                 window.render(timings[i]);
             }
             
