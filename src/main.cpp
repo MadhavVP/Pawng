@@ -555,12 +555,12 @@ int main(int argc, char* argv[]) {
                             }
                         }
                     }
-                    if (event.key.keysym.sym == SDLK_LEFT)
+                    if ((event.key.keysym.sym == SDLK_LEFT) || (event.key.keysym.sym == SDLK_a))
                     {
                         if (platform.getX() > 0) 
                             platform.changeX(-platformSpeed);
                     }
-                    if (event.key.keysym.sym == SDLK_RIGHT)
+                    if ((event.key.keysym.sym == SDLK_RIGHT) || (event.key.keysym.sym == SDLK_d))
                     {
                         if (platform.getX() < windowWidth - platformWidth) {
                             platform.changeX(platformSpeed);
