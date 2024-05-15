@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
                                window.loadTexture("res/gfx/200x300pixel1.png"),
                                window.loadTexture("res/gfx/200x300pixel2.png"),
                                window.loadTexture("res/gfx/200x300pixel3.png")};
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 4; i++)
     {
         SDL_SetTextureAlphaMod(timerTex[i], 150);
     }                           
@@ -44,8 +44,12 @@ int main(int argc, char* argv[]) {
                                window.loadTexture("res/gfx/40x60pixel7.png"),
                                window.loadTexture("res/gfx/40x60pixel8.png"),
                                window.loadTexture("res/gfx/40x60pixel9.png")};
+    for (int i = 0; i < 9; i++)
+    {
+        SDL_SetTextureAlphaMod(clockTex[i], 150);
+    }  
     SDL_Texture *dotTex = window.loadTexture("res/gfx/pixelDot.png");
-    
+    SDL_Texture *obstacleTex = window.loadTexture("res/gfx/100x100square3.png");
     int buttonWidth = 200;
     int buttonHeight = 50;
     int hoverButtonWidth = 220;
@@ -59,6 +63,9 @@ int main(int argc, char* argv[]) {
 
     int clockWidth = 40;
     int clockHeight = 60;
+
+    int obstacleWidth = 100;
+    int obstacleHeight = obstacleWidth;
 
     srand(time(NULL));
     int windowWidth = 0;
@@ -217,6 +224,13 @@ int main(int argc, char* argv[]) {
     int hrTens = 0;
     int clockMidX = 0;
     int clockY = 5;
+    int firstLevel = 10;
+    const int numObstacles = 7;
+    int obstacleNum = 0;
+    bool obstacles[numObstacles] = {false};
+    Entity *obstacleList[numObstacles] = {NULL};
+
+    int speedLevels = 4;
     while (playing)
     {   
         timer5s.reset();
@@ -243,11 +257,11 @@ int main(int argc, char* argv[]) {
         }
         frameManager.update();
         gameClock.update();
-        printf("Line 250\n");
+        //printf("Line 250\n");
         if (frameManager.getDT() > (1 / 240.0f)) {
             window.clear();
             frameManager.reset();
-            printf("Line 254\n");
+            //printf("Line 254\n");
             
             secOnes = gameClock.getSecOnes();
             secTens = gameClock.getSecTens();
@@ -256,7 +270,7 @@ int main(int argc, char* argv[]) {
             hrOnes = gameClock.getHrOnes();
             hrTens = gameClock.getHrTens();
             clockMidX = (windowWidth / 2) - (clockWidth / 2);
-            printf("Line 261\n");
+            //printf("Line 261\n");
             Entity timings[] = {Entity(clockMidX + (3 * clockWidth) + 4, clockY, clockWidth, clockHeight, clockTex[secOnes]),
                                 Entity(clockMidX + (2 * clockWidth) + 3, clockY, clockWidth, clockHeight, clockTex[secTens]),
                                 Entity(clockMidX + (0.5 * clockWidth), clockY, clockWidth, clockHeight, clockTex[minOnes]),
@@ -265,7 +279,28 @@ int main(int argc, char* argv[]) {
                                 Entity(clockMidX - (3 * clockWidth) + 4, clockY, clockWidth, clockHeight, clockTex[hrTens])};
             
             SDL_GetWindowSize(window.window, &windowWidth, &windowHeight);
-            printf("Line 269\n");
+            //printf("Line 269\n");
+            if ((gameClock.getDT() > firstLevel) && (firstLevel <= (10 * 2^speedLevels))) {
+                ballSpeed.changeX(1.15);
+                ballSpeed.changeY(1.15);
+                platform.changeX(1.15);
+                firstLevel *= 2;
+            }
+            if ((gameClock.getDT() > (15 + (15 * obstacleNum))) && (!obstacles[obstacleNum]) && (obstacleNum < 7)) {
+                obstacles[obstacleNum] = true;
+                int obsX = ball.getX();
+                while ((obsX <= ball.getX() + ballWidth) && (obsX + obstacleWidth >= ball.getX())) {
+                    //for (int i = 0; i < obstacleNum; i++) {
+                        //while ((obsX <= (*obstacleList[i]).getX() + obstacleWidth) && (obsX + obstacleWidth >= (*obstacleList[i]).getX())) {
+                            obsX = ((rand() % (windowWidth - obstacleWidth)) + (obstacleWidth / 2));
+                        //}
+                    //}
+                }
+                
+                obstacleList[obstacleNum] = new Entity(obsX, (rand() % (windowHeight - (2 * windowHeight / 5))), obstacleWidth, obstacleHeight, obstacleTex);
+                obstacleNum++;                
+            }
+            
             if (ball.getX() <= 0)
             {
                 ballSpeed.changeX(-1);
@@ -282,9 +317,37 @@ int main(int argc, char* argv[]) {
                 ballSpeed.changeY(-1);
                 ball.setY(windowHeight - ballHeight);
             }
-            if ((ball.getX() >= platform.getX()) && (ball.getX() <= (platform.getX() + platformWidth)) && (ball.getY() >= platform.getY()) && (ball.getY() <= (platform.getY() + lenience))) {
+            if ((ball.getX() + ballWidth - lenience >= platform.getX()) && (ball.getX() + lenience <= (platform.getX() + platformWidth)) && (ball.getY() + ballHeight >= platform.getY()) && (ball.getY() <= (platform.getY() + lenience))) {
+                ball.setY(platform.getY() - ballHeight);
                 ballSpeed.changeY(-1);
             }
+            for (int i = 0; i < obstacleNum; i++) {
+                if ((ball.getX() - lenience <= (*obstacleList[i]).getX() + obstacleWidth) && (ball.getX() >= (*obstacleList[i]).getX() + obstacleWidth - lenience) && (ball.getY() + ballHeight >= (*obstacleList[i]).getY()) && (ball.getY() <= (*obstacleList[i]).getY() + obstacleHeight))
+                {
+                    //printf("Ball hits right wall\n");
+                    ball.setX((*obstacleList[i]).getX() + obstacleWidth + lenience);
+                    ballSpeed.changeX(-1);
+                }
+                if ((ball.getX() + ballWidth + lenience >= (*obstacleList[i]).getX()) && (ball.getX() + ballWidth <= (*obstacleList[i]).getX() + lenience) && (ball.getY() + ballHeight >= (*obstacleList[i]).getY()) && (ball.getY() <= (*obstacleList[i]).getY() + obstacleHeight))
+                {
+                    //printf("Ball hits left wall\n");
+                    ball.setX((*obstacleList[i]).getX() - ballWidth - lenience);
+                    ballSpeed.changeX(-1);
+                }
+                if ((ball.getY() - lenience <= (*obstacleList[i]).getY() + obstacleHeight) && (ball.getY() >= (*obstacleList[i]).getY() + obstacleHeight - lenience) && (ball.getX() + ballWidth >= (*obstacleList[i]).getX()) && (ball.getX() <= (*obstacleList[i]).getX() + obstacleWidth))
+                {
+                    //printf("Ball hits bottom wall\n");
+                    ball.setY((*obstacleList[i]).getY() + obstacleHeight + lenience);
+                    ballSpeed.changeY(-1);
+                }
+                if ((ball.getY() + ballHeight + lenience >= (*obstacleList[i]).getY()) && (ball.getY() + ballHeight <= (*obstacleList[i]).getY() + lenience) && (ball.getX() + ballWidth >= (*obstacleList[i]).getX()) && (ball.getX() <= (*obstacleList[i]).getX() + obstacleWidth))
+                {
+                    //printf("Ball hits top wall\n");
+                    ball.setY((*obstacleList[i]).getY() - ballHeight - lenience);
+                    ballSpeed.changeY(-1);
+                }
+            }
+            
             ball.changeX(ballSpeed.getX());
             ball.changeY(ballSpeed.getY());
             while (SDL_PollEvent(&event))
@@ -316,18 +379,28 @@ int main(int argc, char* argv[]) {
                 }
             }
 
-            
+            for (int i = 0; i < numObstacles; i++)
+            {
+                if (obstacles[i]) {
+                    window.render(*(obstacleList[i]));
+                }
+                
+            }
+
             for (int i = 0; i < 6; i++) {
                 window.render(timings[i]);
             }
+            
             window.render(ball);
             window.render(platform);
             window.display();
         }
         
     }
-    gameClock.print();
+    
     leaving: 
+    gameClock.print();
+    printf("Num Obstacles = %d, Obstacle Num = %d\n", numObstacles, obstacleNum);
     window.cleanup();
     SDL_Quit();
     return 0;

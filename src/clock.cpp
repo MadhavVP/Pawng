@@ -40,7 +40,7 @@ void Clock::update() {
 }
 
 void Clock::print() {
-    printf("%d:%d:%d\n", hrs, mins, secs);
+    printf("%.2d:%.2d:%.2d\n", hrs, mins, secs);
 }
 
 int Clock::getSecOnes() {
