@@ -33,14 +33,17 @@ SDL_Texture *RenderWindow::loadTexture(const char *fp) {
     return tex;
 }
 
+// Call this function before ending the program, it makes sure SDL properly closes
 void RenderWindow::cleanup() {
     SDL_DestroyWindow(window);
 }
 
+// This function cleans up any previous renders before displaying any new renders (call it every frame)
 void RenderWindow::clear() {
     SDL_RenderClear(rend);
 }
 
+// This function should be called whenever rendering something to the screen
 void RenderWindow::render(Entity &entity) {
     SDL_Rect src;
     src.x = entity.getCurrentFrame().x;
@@ -55,6 +58,7 @@ void RenderWindow::render(Entity &entity) {
     SDL_RenderCopy(rend, entity.getTex(), &src, &dst);
 }
 
+// This function actually presents whatever has been rendered
 void RenderWindow::display() {
     SDL_RenderPresent(rend);
 }

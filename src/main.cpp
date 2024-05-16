@@ -1,3 +1,5 @@
+/* Pawng, all code written by Madhav V., 05/2024*/
+
 #include <sdl/SDL.h>
 #include <sdl/SDL_image.h>
 #include <iostream>

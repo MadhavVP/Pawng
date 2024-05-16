@@ -13,6 +13,7 @@ Clock::Clock() {
 }
 
 float Clock::getDT() {return DT;}
+
 void Clock::reset() {
     startMs = SDL_GetTicks64();
     elapsedMs = 0;
